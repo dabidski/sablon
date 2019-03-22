@@ -49,6 +49,17 @@ module Sablon
       render(context, properties).string
     end
 
+    def get_fields
+      # initialize environment
+      @document = Sablon::DOM::Model.new(RubyZip::File.open(@path))
+      # parse fields
+      @document.zip_contents.to_a.map do |(entry_name, content)|
+        @document.current_entry = entry_name
+        processors = Template.get_processors(entry_name)
+        processors.map { |processor| processor.parse_field_codes(content) }
+      end.flatten.uniq
+    end
+
     private
 
     def render(context, properties = {})
